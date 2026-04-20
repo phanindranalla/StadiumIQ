@@ -238,3 +238,35 @@ async def health_check() -> JSONResponse:
         "status": "ok",
         "service": "StadiumIQ",
     })
+
+
+@app.get("/api/debug-keys")
+async def debug_keys() -> JSONResponse:
+    """Diagnostic endpoint to check API key loading on Cloud Run."""
+    import os
+    from live_data import _api_sports_request, _cricket_api_request
+    
+    football_key = os.getenv("FOOTBALL_API_KEY", "")
+    cricket_key = os.getenv("CRICKET_API_KEY", "")
+    gemini_key = os.getenv("GEMINI_API_KEY", "")
+    maps_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+
+    # Perform a quick test request to see if the network is blocking us or keys are invalid
+    cricket_test = "Not tested"
+    try:
+        test_resp = _cricket_api_request("/currentMatches", {"offset": "0"})
+        cricket_test = "Success" if test_resp else "Failed/Empty"
+    except Exception as e:
+        cricket_test = f"Error: {e}"
+
+    return JSONResponse(content={
+        "keys_present": {
+            "football": len(football_key) > 5,
+            "cricket": len(cricket_key) > 5,
+            "gemini": len(gemini_key) > 5,
+            "maps": len(maps_key) > 5,
+        },
+        "football_prefix": football_key[:4] if football_key else "None",
+        "cricket_prefix": cricket_key[:4] if cricket_key else "None",
+        "cricket_api_test": cricket_test,
+    })
