@@ -152,6 +152,22 @@ def _search_football(query: str) -> List[dict]:
             if query_lower in searchable:
                 results.append(_format_football_fixture(fix, is_live=False))
 
+    # Upcoming fixtures (next 7 days) if nothing found for today
+    if not results:
+        from datetime import timedelta
+        for i in range(1, 8):
+            future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
+            future_data = _api_sports_request(base, "/fixtures", {"date": future_date})
+            if future_data and future_data.get("response"):
+                for fix in future_data["response"]:
+                    home = fix["teams"]["home"]["name"]
+                    away = fix["teams"]["away"]["name"]
+                    league = fix["league"]["name"]
+                    searchable = f"{home} {away} {league}".lower()
+                    if query_lower in searchable:
+                        results.append(_format_football_fixture(fix, is_live=False))
+            if len(results) >= 5: break
+
     return results
 
 
@@ -259,6 +275,20 @@ def _search_basketball(query: str) -> List[dict]:
             searchable = f"{formatted['home_team']} {formatted['away_team']} {formatted['league']}".lower()
             if query_lower in searchable:
                 results.append(formatted)
+
+    # Upcoming games if nothing found for today
+    if not results:
+        from datetime import timedelta
+        for i in range(1, 4):
+            future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
+            future_data = _api_sports_request(base, "/games", {"date": future_date})
+            if future_data and future_data.get("response"):
+                for game in future_data["response"]:
+                    formatted = _format_basketball_game(game, is_live=False)
+                    searchable = f"{formatted['home_team']} {formatted['away_team']} {formatted['league']}".lower()
+                    if query_lower in searchable:
+                        results.append(formatted)
+            if len(results) >= 5: break
 
     return results
 
