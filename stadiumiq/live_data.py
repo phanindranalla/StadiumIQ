@@ -152,10 +152,11 @@ def _search_football(query: str) -> List[dict]:
             if query_lower in searchable:
                 results.append(_format_football_fixture(fix, is_live=False))
 
-    # Upcoming fixtures (next 7 days) if nothing found for today
+    # Upcoming/Recent fixtures (±1 day) if nothing found for today
+    # Note: The free API tier restricts searches to 2026-04-19 through 2026-04-21
     if not results:
         from datetime import timedelta
-        for i in range(1, 8):
+        for i in [1, -1]:
             future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
             future_data = _api_sports_request(base, "/fixtures", {"date": future_date})
             if future_data and future_data.get("response"):
@@ -276,10 +277,10 @@ def _search_basketball(query: str) -> List[dict]:
             if query_lower in searchable:
                 results.append(formatted)
 
-    # Upcoming games if nothing found for today
+    # Upcoming/Recent games (±1 day) if nothing found for today
     if not results:
         from datetime import timedelta
-        for i in range(1, 4):
+        for i in [1, -1]:
             future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
             future_data = _api_sports_request(base, "/games", {"date": future_date})
             if future_data and future_data.get("response"):
