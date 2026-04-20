@@ -1,0 +1,56 @@
+{
+  "venue_name": "StadiumIQ Arena",
+  "total_capacity": 50000,
+  "zones": [
+    {
+      "id": "A",
+      "name": "North Stand",
+      "sections": ["A1", "A2", "A3"],
+      "nearest_gate": "Gate 1",
+      "nearest_food": "Food Court A",
+      "nearest_restroom": "Restroom N1"
+    },
+    {
+      "id": "B",
+      "name": "South Stand",
+      "sections": ["B1", "B2", "B3"],
+      "nearest_gate": "Gate 2",
+      "nearest_food": "Food Court B",
+      "nearest_restroom": "Restroom S1"
+    },
+    {
+      "id": "C",
+      "name": "East Stand",
+      "sections": ["C1", "C2", "C3"],
+      "nearest_gate": "Gate 3",
+      "nearest_food": "Food Court C",
+      "nearest_restroom": "Restroom E1"
+    },
+    {
+      "id": "D",
+      "name": "West Stand",
+      "sections": ["D1", "D2", "D3"],
+      "nearest_gate": "Gate 4",
+      "nearest_food": "Food Court D",
+      "nearest_restroom": "Restroom W1"
+    }
+  ],
+  "gates": [
+    { "id": "Gate 1", "location": "North", "status": "open" },
+    { "id": "Gate 2", "location": "South", "status": "open" },
+    { "id": "Gate 3", "location": "East", "status": "open" },
+    { "id": "Gate 4", "location": "West", "status": "open" }
+  ],
+  "facilities": [
+    { "id": "Food Court A", "zone": "A", "type": "food" },
+    { "id": "Food Court B", "zone": "B", "type": "food" },
+    { "id": "Food Court C", "zone": "C", "type": "food" },
+    { "id": "Food Court D", "zone": "D", "type": "food" },
+    { "id": "Restroom N1", "zone": "A", "type": "restroom" },
+    { "id": "Restroom S1", "zone": "B", "type": "restroom" },
+    { "id": "Restroom E1", "zone": "C", "type": "restroom" },
+    { "id": "Restroom W1", "zone": "D", "type": "restroom" },
+    { "id": "First Aid North", "zone": "A", "type": "medical" },
+    { "id": "First Aid South", "zone": "B", "type": "medical" }
+  ]
+}

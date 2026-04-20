@@ -1,0 +1,17 @@
+{
+  "event_name": "Championship Finals 2025",
+  "sport": "Generic",
+  "status": "live",
+  "period": "Second Half",
+  "time_remaining_minutes": 34,
+  "score": {
+    "home": "2",
+    "away": "1",
+    "home_team": "Home FC",
+    "away_team": "Away United"
+  },
+  "is_halftime": false,
+  "is_final_10_minutes": false,
+  "estimated_end_time": "16:15",
+  "post_match_exit_open": false
+}

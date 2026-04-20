@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="StadiumIQ — Your Smart Venue Experience Assistant for large-scale sporting events. Live crowd density, queue times, and AI-powered guidance.">
+  <title>StadiumIQ — Smart Venue Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    /* ── CSS Reset & Variables ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0f1117;
+      --bg-card: #1a1d27;
+      --bg-input: #242836;
+      --bg-hover: #2a2e3d;
+      --accent: #4f8ef7;
+      --accent-glow: rgba(79, 142, 247, 0.25);
+      --warning: #f7a94f;
+      --danger: #f74f4f;
+      --success: #4ff7a0;
+      --text-primary: #e8eaed;
+      --text-secondary: #9aa0b0;
+      --text-muted: #6b7280;
+      --border: #2d3144;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --transition: 0.2s ease;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Scrollbar ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ── Top Bar: Match Search ────────────────────────────────── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 16px 20px 0;
+    }
+
+    .top-bar-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .top-bar-brand h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .venue-name-display {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: 4px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 250px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .venue-name-display .material-icons { font-size: 14px; color: var(--accent); }
+
+    /* ── Sport Selector Tabs ──────────────────────────────────── */
+    .sport-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+    }
+
+    .sport-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .sport-tab:hover { color: var(--text-primary); }
+
+    .sport-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .sport-tab .material-icons { font-size: 14px; }
+
+    .result-sport-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .result-sport-badge.football { background: rgba(79,142,247,0.15); color: var(--accent); }
+    .result-sport-badge.basketball { background: rgba(247,169,79,0.15); color: var(--warning); }
+    .result-sport-badge.cricket { background: rgba(79,247,160,0.15); color: var(--success); }
+
+    .match-search-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .match-search-bar {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .match-search-input {
+      flex: 1;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .match-search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .match-search-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .match-search-btn:hover { background: #3d7de5; }
+    .match-search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Search Results Dropdown ──────────────────────────────── */
+    .search-results {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+
+    .search-results.visible { display: block; }
+
+    .search-results-header {
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background var(--transition);
+      border-bottom: 1px solid rgba(45,49,68,0.5);
+    }
+
+    .search-result-item:hover { background: var(--bg-hover); }
+
+    .search-result-item:last-child { border-bottom: none; }
+
+    .result-teams {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-teams-names {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .result-score {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .result-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(79, 247, 160, 0.12);
+      color: var(--success);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .result-live-badge .mini-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .search-no-results {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .search-loading {
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    /* ── Live Mode Indicator ──────────────────────────────────── */
+    .live-indicator {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(79, 247, 160, 0.1);
+      border: 1px solid rgba(79, 247, 160, 0.3);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--success);
+      white-space: nowrap;
+    }
+
+    .live-indicator.visible { display: flex; }
+
+    .live-indicator .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .app-container {
+      display: block;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 20px 20px;
+      /* Let standard page scroll handle overflow */
+    }
+
+    /* ── Chat Panel (Left -> Floating Bottom Right) ───────────── */
+    .chat-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(79, 142, 247, 0.4);
+      cursor: pointer;
+      z-index: 999;
+      transition: transform var(--transition), background var(--transition);
+      border: none;
+    }
+
+    .chat-fab:hover {
+      transform: scale(1.08);
+      background: #3d7de5;
+    }
+
+    .chat-fab .material-icons {
+      font-size: 32px;
+    }
+
+    .chat-panel {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 400px;
+      height: 600px;
+      max-height: calc(100vh - 120px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+
+    .chat-panel.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(79,142,247,0.08), transparent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-header-text h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-header-text p {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .chat-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      transition: color var(--transition);
+    }
+
+    .chat-close-btn:hover { color: var(--text-primary); }
+
+    .section-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+    }
+
+    .section-selector label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-selector select {
+      flex: 1;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color var(--transition);
+      outline: none;
+    }
+
+    .section-selector select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ── Alert Banner ─────────────────────────────────────────── */
+    .alert-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, rgba(247,169,79,0.15), rgba(247,169,79,0.05));
+      border-bottom: 1px solid rgba(247,169,79,0.3);
+      animation: slideDown 0.3s ease;
+    }
+
+    .alert-banner.visible { display: flex; }
+
+    .alert-banner .material-icons { color: var(--warning); font-size: 20px; }
+
+    .alert-banner-text {
+      flex: 1;
+      font-size: 0.8rem;
+      color: var(--warning);
+      line-height: 1.4;
+    }
+
+    .alert-dismiss {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color var(--transition);
+      display: flex;
+      align-items: center;
+    }
+
+    .alert-dismiss:hover { color: var(--text-primary); }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Chat Messages ────────────────────────────────────────── */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .message {
+      max-width: 85%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .message.ai { align-self: flex-start; }
+    .message.user { align-self: flex-end; }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      word-wrap: break-word;
+    }
+
+    .message.ai .message-bubble {
+      background: var(--bg-primary);
+      border-left: 3px solid var(--accent);
+      color: var(--text-primary);
+    }
+
+    .message.user .message-bubble {
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius) var(--radius) 4px var(--radius);
+    }
+
+    .message-time {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      padding: 0 4px;
+    }
+
+    .message.user .message-time { text-align: right; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Chat Input ───────────────────────────────────────────── */
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-primary);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .send-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+    }
+
+    .send-btn:hover { background: #3d7de5; transform: translateY(-1px); }
+    .send-btn:active { transform: translateY(0); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .mic-btn {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+
+    .mic-btn:hover {
+      background: var(--border);
+      color: var(--accent);
+    }
+
+    .mic-btn.listening {
+      background: rgba(247, 79, 79, 0.15);
+      border-color: rgba(247, 79, 79, 0.5);
+      color: var(--danger);
+      animation: pulse-danger 1.5s infinite;
+    }
+
+    @keyframes pulse-danger {
+      0% { box-shadow: 0 0 0 0 rgba(247, 79, 79, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(247, 79, 79, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(247, 79, 79, 0); }
+    }
+
+    /* ── Right Column: Live Panels (Now Full Screen) ──────────── */
+    .panels-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-bottom: 100px; /* Space for chat FAB */
+    }
+
+    .panels-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .panels-header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panels-header h2 .material-icons {
+      font-size: 2rem;
+      color: var(--accent);
+    }
+
+    .panels-meta { text-align: right; }
+
+    .panels-meta .auto-refresh {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .panels-meta .last-updated {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ── Panel Card ───────────────────────────────────────────── */
+    .panel {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: border-color var(--transition);
+      background: linear-gradient(145deg, rgba(26,29,39,0.95), rgba(20,23,31,0.95));
+      backdrop-filter: blur(10px);
+    }
+
+    .panel:hover { border-color: rgba(79,142,247,0.4); }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 24px 30px 16px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .panel-title .material-icons {
+      font-size: 1.6rem;
+      color: var(--accent);
+    }
+
+    .panel-title .material-icons { font-size: 20px; color: var(--accent); }
+
+    .panel-body { padding: 0 18px 14px; }
+
+    /* ── Game State Panel ─────────────────────────────────────── */
+    .game-info { display: flex; flex-direction: column; gap: 10px; }
+
+    .game-event {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(79, 247, 160, 0.1);
+      color: var(--success);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 14px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+    }
+
+    .team { text-align: center; flex: 1; }
+
+    .team-name {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
+
+    .team-score { font-size: 1.8rem; font-weight: 700; color: var(--text-primary); }
+
+    .score-separator { font-size: 1.1rem; color: var(--text-muted); font-weight: 300; }
+
+    .game-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .game-meta span { display: flex; align-items: center; gap: 4px; }
+    .game-meta .material-icons { font-size: 15px; color: var(--accent); }
+
+    .context-tip {
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(79,142,247,0.08);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .context-tip .material-icons { font-size: 16px; }
+
+    /* ── Crowd Density Panel ──────────────────────────────────── */
+    .density-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .density-item { display: flex; align-items: center; gap: 10px; }
+
+    .density-zone-name {
+      min-width: 100px;
+      font-size: 0.8rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .density-zone-name .material-icons { font-size: 15px; color: var(--warning); }
+
+    .density-bar-wrapper {
+      flex: 1;
+      height: 8px;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .density-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+
+    .density-bar.low { background: var(--success); }
+    .density-bar.medium { background: var(--warning); }
+    .density-bar.high { background: var(--danger); }
+
+    .density-percent {
+      min-width: 36px;
+      text-align: right;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ── Queue Panel ──────────────────────────────────────────── */
+    .queue-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      margin-bottom: 10px;
+    }
+
+    .queue-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .queue-tab:hover { color: var(--text-primary); }
+
+    .queue-tab.active {
+      background: var(--bg-card);
+      color: var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .queue-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .queue-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      transition: background var(--transition);
+    }
+
+    .queue-item:hover { background: var(--bg-hover); }
+
+    .queue-facility-name { font-size: 0.8rem; color: var(--text-primary); }
+
+    .wait-chip {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .wait-chip.low { background: rgba(79,247,160,0.12); color: var(--success); }
+    .wait-chip.medium { background: rgba(247,169,79,0.12); color: var(--warning); }
+    .wait-chip.high { background: rgba(247,79,79,0.12); color: var(--danger); }
+
+    /* ── Exit Strategy Panel ──────────────────────────────────── */
+    .exit-info { display: flex; flex-direction: column; gap: 10px; }
+
+    .exit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+    }
+
+    .exit-row .material-icons { font-size: 20px; color: var(--accent); }
+
+    .exit-row-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .exit-row-value { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); }
+
+    .exit-tip {
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--text-muted);
+      padding: 0 4px;
+      line-height: 1.5;
+    }
+
+    .refresh-btn {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all var(--transition);
+      align-self: flex-start;
+    }
+
+    .refresh-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .refresh-btn .material-icons { font-size: 15px; }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .top-bar { flex-wrap: wrap; gap: 10px; }
+      .venue-name-display { max-width: 180px; }
+      .chat-panel { width: calc(100% - 40px); right: 20px; left: 20px; }
+    }
+
+    @media (max-width: 600px) {
+      .top-bar-brand h1 { font-size: 1.1rem; }
+      .venue-name-display { display: none; }
+    }
+
+    /* ── Loading Dots ─────────────────────────────────────────── */
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.2s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0% { content: ''; }
+      25% { content: '.'; }
+      50% { content: '..'; }
+      75% { content: '...'; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ Top Bar: Brand + Match Search ══════════════════════════ -->
+  <div class="top-bar">
+    <div class="top-bar-brand">
+      <h1>🏟️ StadiumIQ</h1>
+    </div>
+    <div class="venue-name-display" id="venue-name-display">
+      <span class="material-icons">stadium</span>
+      <span id="venue-name-text">StadiumIQ Arena</span>
+    </div>
+    <div class="live-indicator" id="live-indicator">
+      <span class="pulse-dot"></span>
+      LIVE DATA
+    </div>
+    <div class="sport-tabs" id="sport-tabs" role="tablist" aria-label="Select sport">
+      <button class="sport-tab active" data-sport="all" role="tab" aria-selected="true" onclick="switchSport('all')">
+        <span class="material-icons">public</span> All
+      </button>
+      <button class="sport-tab" data-sport="football" role="tab" onclick="switchSport('football')">
+        <span class="material-icons">sports_soccer</span> Football
+      </button>
+      <button class="sport-tab" data-sport="basketball" role="tab" onclick="switchSport('basketball')">
+        <span class="material-icons">sports_basketball</span> Basketball
+      </button>
+      <button class="sport-tab" data-sport="cricket" role="tab" onclick="switchSport('cricket')">
+        <span class="material-icons">sports_cricket</span> Cricket
+      </button>
+    </div>
+    <div class="match-search-wrapper">
+      <div class="match-search-bar">
+        <input type="text" class="match-search-input" id="match-search-input"
+               placeholder="Search for a live match (e.g., Lakers, IPL, La Liga...)"
+               aria-label="Search for a match"
+               autocomplete="off">
+        <button class="match-search-btn" id="match-search-btn"
+                aria-label="Search matches" onclick="searchMatches()">
+          <span class="material-icons" style="font-size:16px;">search</span>
+          Search
+        </button>
+      </div>
+      <div class="search-results" id="search-results">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- ═══ Floating Chat FAB ══════════════════════════════════ -->
+    <button class="chat-fab" id="chat-fab" onclick="toggleChat()" aria-label="Open AI Assistant">
+      <span class="material-icons">chat</span>
+    </button>
+
+    <!-- ═══ Floating Chat Panel ════════════════════════════════ -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-header">
+        <div class="chat-header-text">
+          <h2>💬 AI Assistant</h2>
+          <p>For coordinating or navigating</p>
+        </div>
+        <button class="chat-close-btn" onclick="toggleChat()" aria-label="Close Assistant">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="section-selector">
+        <label for="section-select">
+          <span class="material-icons" style="font-size:14px;vertical-align:middle;margin-right:2px;">event_seat</span>
+          Section
+        </label>
+        <select id="section-select" aria-label="Select your seat section" aria-describedby="section-help">
+          <option value="A1">A1 — North Stand</option>
+          <option value="A2">A2 — North Stand</option>
+          <option value="A3">A3 — North Stand</option>
+          <option value="B1">B1 — South Stand</option>
+          <option value="B2">B2 — South Stand</option>
+          <option value="B3">B3 — South Stand</option>
+          <option value="C1">C1 — East Stand</option>
+          <option value="C2">C2 — East Stand</option>
+          <option value="C3">C3 — East Stand</option>
+          <option value="D1">D1 — West Stand</option>
+          <option value="D2">D2 — West Stand</option>
+          <option value="D3">D3 — West Stand</option>
+        </select>
+        <span id="section-help" style="display:none;">Select the section matching your ticket</span>
+      </div>
+
+      <!-- Alert Banner -->
+      <div class="alert-banner" id="alert-banner" role="alert">
+        <span class="material-icons">notifications_active</span>
+        <span class="alert-banner-text" id="alert-text"></span>
+        <button class="alert-dismiss" id="alert-dismiss-btn" aria-label="Dismiss alert" onclick="dismissAlert()">
+          <span class="material-icons" style="font-size:18px;">close</span>
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+        <!-- Messages inserted by JS -->
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chat-input"
+               placeholder="Ask about queues, exits, food..."
+               aria-label="Type your message"
+               aria-describedby="chat-input-help"
+               autocomplete="off">
+        <span id="chat-input-help" style="display:none;">Type your question for the venue assistant</span>
+        
+        <button class="mic-btn" id="mic-btn" aria-label="Use Voice Input" onclick="toggleVoiceInput(event)">
+          <span class="material-icons">mic</span>
+        </button>
+
+        <button class="send-btn" id="send-btn" aria-label="Send message" onclick="sendMessage()">
+          <span class="material-icons" style="font-size:16px;">send</span>
+          Send
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ RIGHT: Live Panels (Full Screen) ═══════════════════ -->
+    <div class="panels-column">
+      <div class="panels-header">
+        <h2>
+          <span class="material-icons">dashboard</span>
+          Live Venue Intelligence
+        </h2>
+        <div class="panels-meta">
+          <div class="auto-refresh">
+            <span class="material-icons" style="font-size:13px;vertical-align:middle;">autorenew</span>
+            Auto-refreshes every 30s
+          </div>
+          <div class="last-updated" id="last-updated">Last updated: —</div>
+        </div>
+      </div>
+
+      <!-- Panel 1: Game State -->
+      <div class="panel" id="game-panel">
+        <div class="panel-title">
+          <span class="material-icons">sports_soccer</span>
+          Game State
+        </div>
+        <div class="panel-body">
+          <div class="game-info" id="game-info">
+            <div class="game-event">
+              <span id="game-event-name">Search for a match to see live data</span>
+              <span class="status-badge" id="game-status-badge" style="display:none;">
+                <span class="pulse-dot"></span>
+                <span id="game-status-text">LIVE</span>
+              </span>
+            </div>
+            <div class="scoreboard">
+              <div class="team">
+                <img class="team-logo" id="home-team-logo" src="" alt="" style="display:none;">
+                <div class="team-name" id="home-team-name">—</div>
+                <div class="team-score" id="home-score">-</div>
+              </div>
+              <div class="score-separator">vs</div>
+              <div class="team">
+                <img class="team-logo" id="away-team-logo" src="" alt="" style="display:none;">
+                <div class="team-name" id="away-team-name">—</div>
+                <div class="team-score" id="away-score">-</div>
+              </div>
+            </div>
+            <div class="game-meta">
+              <span>
+                <span class="material-icons">schedule</span>
+                <span id="game-period">—</span>
+              </span>
+              <span>
+                <span class="material-icons">timer</span>
+                <span id="game-time-remaining">— min remaining</span>
+              </span>
+            </div>
+            <div class="context-tip" id="context-tip">
+              <span class="material-icons">lightbulb</span>
+              <span id="context-tip-text">Search for a match to get started</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Crowd Density -->
+      <div class="panel" id="crowd-panel">
+        <div class="panel-title">
+          <span class="material-icons">groups</span>
+          Zone Crowd Levels
+        </div>
+        <div class="panel-body">
+          <div class="density-list" id="density-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 3: Queue Wait Times -->
+      <div class="panel" id="queue-panel">
+        <div class="panel-title">
+          <span class="material-icons">schedule</span>
+          Queue Wait Times
+        </div>
+        <div class="panel-body">
+          <div class="queue-tabs" role="tablist">
+            <button class="queue-tab active" id="tab-food" role="tab"
+                    aria-selected="true" aria-controls="queue-list"
+                    onclick="switchQueueTab('food')">
+              <span class="material-icons" style="font-size:15px;">restaurant</span>
+              Food
+            </button>
+            <button class="queue-tab" id="tab-restroom" role="tab"
+                    aria-selected="false" aria-controls="queue-list"
+                    onclick="switchQueueTab('restroom')">
+              <span class="material-icons" style="font-size:15px;">wc</span>
+              Restrooms
+            </button>
+          </div>
+          <div class="queue-list" id="queue-list" role="tabpanel">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 4: Exit Strategy with Google Maps -->
+      <div class="panel" id="exit-panel">
+        <div class="panel-title">
+          <span class="material-icons">exit_to_app</span>
+          Exit Strategy & Venue Map
+        </div>
+        <div class="panel-body">
+          <div style="display:flex; gap: 20px; flex-wrap: wrap;">
+            <div class="exit-info" id="exit-info" style="flex: 1; min-width: 250px;">
+              <!-- Populated by JS -->
+            </div>
+            <div class="exit-map" id="exit-map" style="flex: 2; min-width: 300px; height: 300px; border-radius: var(--radius-sm); overflow: hidden; display: none;">
+              <!-- Interactive Google Map loads here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* ═══ UI Toggle Logic ═════════════════════════════════════════ */
+    function toggleChat() {
+      const chatPanel = document.getElementById('chat-panel');
+      const isCurrentlyOpen = chatPanel.classList.contains('open');
+      
+      if (isCurrentlyOpen) {
+        chatPanel.classList.remove('open');
+      } else {
+        chatPanel.classList.add('open');
+        // Auto focus input when opened
+        setTimeout(() => document.getElementById('chat-input').focus(), 300);
+      }
+    }
+    /* ═══ Voice API ═══════════════════════════════════════════════ */
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+    let isListening = false;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      
+      recognition.onstart = function() {
+        isListening = true;
+        document.getElementById('mic-btn').classList.add('listening');
+        chatInput.placeholder = 'Listening...';
+      };
+      
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        chatInput.value = transcript;
+        sendMessage();
+      };
+      
+      recognition.onerror = function(event) {
+        console.error("Speech recognition error", event.error);
+        stopListening();
+      };
+      
+      recognition.onend = function() {
+        stopListening();
+      };
+    }
+
+    function toggleVoiceInput(event) {
+      event.preventDefault();
+      if (!SpeechRecognition) {
+        alert("Sorry, your browser doesn't support Voice Input.");
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    }
+
+    function stopListening() {
+      isListening = false;
+      const micBtn = document.getElementById('mic-btn');
+      if (micBtn) micBtn.classList.remove('listening');
+      chatInput.placeholder = 'Ask about queues, exits, food...';
+    }
+
+    /* ═══ Map Logic ═══════════════════════════════════════════════ */
+    let interactiveMap = null;
+    let PlaceLib = null;
+    let AdvancedMarker = null;
+    let geocoder = null;
+    let mapMarkers = [];
+
+    async function fetchConfigAndLoadMaps() {
+      try {
+        const res = await fetch('/api/config');
+        const config = await res.json();
+        if (config.maps_api_key && config.maps_api_key !== 'your_maps_api_key_here') {
+          // Modern Google Maps API Inline Loader
+          (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: config.maps_api_key,
+            v: "beta" // Must use beta or weekly for new Places API
+          });
+          initMapAsync();
+        } else {
+           console.log("No valid Google Maps API Key found.");
+        }
+      } catch(err) {
+        console.error("Failed to fetch maps config", err);
+      }
+    }
+
+    async function initMapAsync() {
+      const { Map } = await google.maps.importLibrary("maps");
+      const { Place } = await google.maps.importLibrary("places");
+      const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+      const { Geocoder } = await google.maps.importLibrary("geocoding");
+
+      PlaceLib = Place;
+      AdvancedMarker = AdvancedMarkerElement;
+      geocoder = new Geocoder();
+
+      const mapContainer = document.getElementById('exit-map');
+      
+      // Initialize with dark style
+      interactiveMap = new Map(mapContainer, {
+        center: { lat: 34.0430, lng: -118.2673 },
+        zoom: 15,
+        mapId: "DEMO_MAP_ID", // Required for Advanced Markers
+        mapTypeControl: false,
+        streetViewControl: false,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+        ]
+      });
+
+      mapContainer.style.display = 'block';
+
+      if (venueData && venueData.venue_name) {
+         updateGoogleMap(venueData.venue_name);
+      }
+    }
+
+    function clearMapMarkers() {
+      mapMarkers.forEach(marker => { if(marker.map) marker.map = null; });
+      mapMarkers = [];
+    }
+
+    async function createPlaceMarker(place, type) {
+       if (!place.location) return;
+
+       const { PinElement } = await google.maps.importLibrary("marker");
+       let bgColor = "#ea4335"; // Red
+       if (type === 'transit') bgColor = "#4f8ef7"; // Blue
+       if (type === 'parking') bgColor = "#f7a94f"; // Yellow
+       if (type === 'stadium') bgColor = "#4ff7a0"; // Green
+
+       const pin = new PinElement({ background: bgColor, borderColor: "#000", glyphColor: "#000" });
+
+       const marker = new AdvancedMarker({
+         map: interactiveMap,
+         position: place.location,
+         title: place.displayName,
+         content: pin.element
+       });
+
+       mapMarkers.push(marker);
+    }
+
+    function updateGoogleMap(venueName) {
+      if (!interactiveMap || !geocoder || !venueName || venueName === "—") return;
+      
+      const searchName = venueName === "StadiumIQ Arena" ? "Crypto.com Arena Los Angeles" : venueName;
+
+      geocoder.geocode({ address: searchName }, async (results, status) => {
+        if (status === 'OK' && results[0]) {
+           const loc = results[0].geometry.location;
+           interactiveMap.setCenter(loc);
+           clearMapMarkers();
+
+           // Stadium marker
+           createPlaceMarker({ location: loc, displayName: venueName }, 'stadium');
+
+           if (PlaceLib) {
+              try {
+                const transitReq = {
+                  locationRestriction: { center: loc, radius: 1000 },
+                  includedTypes: ['transit_station'],
+                  fields: ['displayName', 'location']
+                };
+                const { places: transits } = await PlaceLib.searchNearby(transitReq);
+                if (transits) {
+                  for(let i=0; i<Math.min(transits.length, 5); i++) createPlaceMarker(transits[i], 'transit');
+                }
+
+                const parkingReq = {
+                  locationRestriction: { center: loc, radius: 1000 },
+                  includedTypes: ['parking'],
+                  fields: ['displayName', 'location']
+                };
+                const { places: parkings } = await PlaceLib.searchNearby(parkingReq);
+                if (parkings) {
+                  for(let i=0; i<Math.min(parkings.length, 5); i++) createPlaceMarker(parkings[i], 'parking');
+                }
+              } catch(e) {
+                console.error("Places API error:", e);
+              }
+           }
+        }
+      });
+    }
+
+    /* ═══ State ═══════════════════════════════════════════════════ */
+    let venueData = null;
+    let currentQueueTab = 'food';
+    let selectedSport = 'all';
+    let isLoading = false;
+    let isSearching = false;
+
+    /* ═══ DOM Refs ════════════════════════════════════════════════ */
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const sectionSelect = document.getElementById('section-select');
+    const alertBanner = document.getElementById('alert-banner');
+    const alertText = document.getElementById('alert-text');
+    const matchSearchInput = document.getElementById('match-search-input');
+    const searchResults = document.getElementById('search-results');
+    const venueNameText = document.getElementById('venue-name-text');
+    const liveIndicator = document.getElementById('live-indicator');
+
+    /* ═══ Init ════════════════════════════════════════════════════ */
+    document.addEventListener('DOMContentLoaded', () => {
+      addMessage('ai', 'Welcome to StadiumIQ! Search for a live match above to get real-time scores and venue intelligence. You can also ask me anything — current queue times, crowd levels, or exit strategies.');
+      fetchConfigAndLoadMaps();
+      fetchVenueData();
+      fetchActiveMatch();
+      updateExitStrategy();
+      setInterval(fetchVenueData, 30000);
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    matchSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        searchMatches();
+      }
+      if (e.key === 'Escape') {
+        searchResults.classList.remove('visible');
+      }
+    });
+
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.match-search-wrapper')) {
+        searchResults.classList.remove('visible');
+      }
+    });
+
+    sectionSelect.addEventListener('change', () => {
+      updateExitStrategy();
+    });
+
+    /* ═══ Sport Tabs ════════════════════════════════════════════ */
+    function switchSport(sport) {
+      selectedSport = sport;
+      document.querySelectorAll('.sport-tab').forEach(tab => {
+        const isActive = tab.dataset.sport === sport;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive);
+      });
+    }
+
+    /* ═══ Match Search ═══════════════════════════════════════════ */
+    async function searchMatches() {
+      const query = matchSearchInput.value.trim();
+      if (!query || query.length < 2 || isSearching) return;
+
+      isSearching = true;
+      searchResults.innerHTML = '<div class="search-loading"><span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">hourglass_top</span>Searching matches...</div>';
+      searchResults.classList.add('visible');
+
+      try {
+        const res = await fetch(`/api/search-matches?q=${encodeURIComponent(query)}&sport=${selectedSport}`);
+        const data = await res.json();
+
+        if (data.error) {
+          searchResults.innerHTML = `<div class="search-no-results">${data.error}</div>`;
+          return;
+        }
+
+        if (!data.matches || data.matches.length === 0) {
+          searchResults.innerHTML = '<div class="search-no-results"><span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">search_off</span>No matches found. Try a different team or league name.</div>';
+          return;
+        }
+
+        let html = `<div class="search-results-header">${data.matches.length} match${data.matches.length > 1 ? 'es' : ''} found</div>`;
+
+        const sportIcons = { football: 'sports_soccer', basketball: 'sports_basketball', cricket: 'sports_cricket' };
+
+        data.matches.forEach(match => {
+          const scoreDisplay = (match.score_home !== null && match.score_away !== null)
+            ? `${match.score_home} - ${match.score_away}`
+            : 'vs';
+          const liveBadge = match.is_live
+            ? '<span class="result-live-badge"><span class="mini-dot"></span>LIVE</span>'
+            : '';
+          const sportBadge = match.sport
+            ? `<span class="result-sport-badge ${match.sport}"><span class="material-icons" style="font-size:10px;">${sportIcons[match.sport] || 'sports'}</span>${match.sport}</span>`
+            : '';
+
+          html += `
+            <div class="search-result-item" onclick="selectMatch('${match.fixture_id}', '${match.sport || 'football'}')" role="button" tabindex="0" aria-label="Select ${match.home_team} versus ${match.away_team}">
+              <div class="result-teams">
+                <div class="result-teams-names">${escapeHtml(match.home_team)} vs ${escapeHtml(match.away_team)}</div>
+                <div class="result-meta">
+                  ${sportBadge}
+                  <span>${escapeHtml(match.league)}</span>
+                  <span>📍 ${escapeHtml(match.venue_name)}</span>
+                  ${liveBadge}
+                </div>
+              </div>
+              <div class="result-score">${scoreDisplay}</div>
+            </div>
+          `;
+        });
+
+        searchResults.innerHTML = html;
+
+      } catch (err) {
+        searchResults.innerHTML = '<div class="search-no-results">Failed to search. Check your API key or try again.</div>';
+        console.error('Search error:', err);
+      } finally {
+        isSearching = false;
+      }
+    }
+
+    async function selectMatch(fixtureId, sport = 'football') {
+      searchResults.classList.remove('visible');
+      searchResults.innerHTML = '';
+      matchSearchInput.value = '';
+
+      // Show loading state
+      venueNameText.textContent = 'Loading match...';
+
+      try {
+        const res = await fetch('/api/select-match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fixture_id: String(fixtureId), sport: sport }),
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          addMessage('ai', `Could not load match: ${data.error}`);
+          return;
+        }
+
+        // Update venue name
+        venueNameText.textContent = data.venue_name || 'Unknown Venue';
+        liveIndicator.classList.add('visible');
+
+        // Refresh all panels
+        await fetchVenueData();
+        updateExitStrategy();
+
+        const match = data.match;
+        addMessage('ai', `🏟️ Now tracking: ${match.home_team} vs ${match.away_team} at ${data.venue_name}. ${match.is_live ? 'This match is LIVE! ' : ''}All panels are now showing real-time data. Ask me anything!`);
+
+      } catch (err) {
+        addMessage('ai', 'Failed to select match. Please try again.');
+        console.error('Select match error:', err);
+      }
+    }
+
+    async function fetchActiveMatch() {
+      try {
+        const res = await fetch('/api/active-match');
+        const data = await res.json();
+        if (data.match) {
+          venueNameText.textContent = data.venue_name || 'StadiumIQ Arena';
+          if (data.is_live) liveIndicator.classList.add('visible');
+        }
+      } catch (err) {
+        // Ignore — will use default venue name
+      }
+    }
+
+    /* ═══ Fetch Venue Data ════════════════════════════════════════ */
+    async function fetchVenueData() {
+      try {
+        const res = await fetch('/api/venue-data');
+        venueData = await res.json();
+        updateGamePanel(venueData.game);
+        updateCrowdPanel(venueData.crowd);
+        updateQueuePanel(venueData.queues);
+        if (venueData.venue_name) {
+          venueNameText.textContent = venueData.venue_name;
+          updateGoogleMap(venueData.venue_name);
+        }
+        if (venueData.is_live) {
+          liveIndicator.classList.add('visible');
+        }
+        document.getElementById('last-updated').textContent =
+          'Last updated: ' + new Date().toLocaleTimeString();
+      } catch (err) {
+        console.error('Failed to fetch venue data:', err);
+      }
+    }
+
+    /* ═══ Update Game Panel ═══════════════════════════════════════ */
+    function updateGamePanel(game) {
+      if (!game || game.error) return;
+
+      document.getElementById('game-event-name').textContent = game.event_name;
+
+      const statusBadge = document.getElementById('game-status-badge');
+      const statusText = document.getElementById('game-status-text');
+      statusText.textContent = game.status.toUpperCase();
+      statusBadge.style.display = 'inline-flex';
+
+      // Color the badge based on status
+      if (game.status === 'live') {
+        statusBadge.style.background = 'rgba(79, 247, 160, 0.1)';
+        statusBadge.style.color = 'var(--success)';
+      } else if (game.status === 'finished') {
+        statusBadge.style.background = 'rgba(107, 114, 128, 0.15)';
+        statusBadge.style.color = 'var(--text-muted)';
+      }
+
+      document.getElementById('home-team-name').textContent = game.score.home_team;
+      document.getElementById('away-team-name').textContent = game.score.away_team;
+      document.getElementById('home-score').textContent = game.score.home;
+      document.getElementById('away-score').textContent = game.score.away;
+      document.getElementById('game-period').textContent = game.period;
+
+      // Show elapsed or remaining
+      if (game.elapsed_minutes !== undefined && game.elapsed_minutes > 0) {
+        document.getElementById('game-time-remaining').textContent =
+          game.elapsed_minutes + "' elapsed";
+      } else {
+        document.getElementById('game-time-remaining').textContent =
+          game.time_remaining_minutes + ' min remaining';
+      }
+
+      document.getElementById('context-tip-text').textContent = game.context_tip || '';
+
+      // Team logos
+      const homeLogo = document.getElementById('home-team-logo');
+      const awayLogo = document.getElementById('away-team-logo');
+      if (game.home_logo) {
+        homeLogo.src = game.home_logo;
+        homeLogo.alt = game.score.home_team;
+        homeLogo.style.display = 'block';
+      }
+      if (game.away_logo) {
+        awayLogo.src = game.away_logo;
+        awayLogo.alt = game.score.away_team;
+        awayLogo.style.display = 'block';
+      }
+    }
+
+    /* ═══ Update Crowd Panel ══════════════════════════════════════ */
+    function updateCrowdPanel(crowd) {
+      if (!crowd || crowd.error) return;
+
+      const list = document.getElementById('density-list');
+      list.innerHTML = '';
+
+      crowd.zones.forEach(zone => {
+        const isMostCrowded = zone.zone_name === crowd.most_crowded;
+        const item = document.createElement('div');
+        item.className = 'density-item';
+        item.innerHTML = `
+          <div class="density-zone-name">
+            ${isMostCrowded ? '<span class="material-icons">warning</span>' : ''}
+            ${zone.zone_name}
+          </div>
+          <div class="density-bar-wrapper">
+            <div class="density-bar ${zone.level}"
+                 style="width: ${zone.density_percent}%"
+                 role="progressbar"
+                 aria-valuenow="${zone.density_percent}"
+                 aria-valuemin="0" aria-valuemax="100"
+                 aria-label="${zone.zone_name} crowd density: ${zone.density_percent}%">
+            </div>
+          </div>
+          <div class="density-percent">${zone.density_percent}%</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    /* ═══ Update Queue Panel ══════════════════════════════════════ */
+    function updateQueuePanel(queues) {
+      if (!queues) return;
+
+      const list = document.getElementById('queue-list');
+      list.innerHTML = '';
+
+      const filtered = queues.filter(q => {
+        if (currentQueueTab === 'food') return q.facility_id.includes('Food Court');
+        if (currentQueueTab === 'restroom') return q.facility_id.includes('Restroom');
+        return true;
+      }).sort((a, b) => a.wait_minutes - b.wait_minutes);
+
+      filtered.forEach(q => {
+        const chipClass = q.wait_minutes < 5 ? 'low' :
+                          q.wait_minutes <= 10 ? 'medium' : 'high';
+        const chipIcon = chipClass === 'low' ? 'check_circle' :
+                         chipClass === 'medium' ? 'schedule' : 'warning';
+
+        const item = document.createElement('div');
+        item.className = 'queue-item';
+        item.innerHTML = `
+          <span class="queue-facility-name">${q.facility_id}</span>
+          <span class="wait-chip ${chipClass}">
+            <span class="material-icons" style="font-size:13px;">${chipIcon}</span>
+            ${q.wait_minutes} min
+          </span>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function switchQueueTab(tab) {
+      currentQueueTab = tab;
+      document.getElementById('tab-food').classList.toggle('active', tab === 'food');
+      document.getElementById('tab-food').setAttribute('aria-selected', tab === 'food');
+      document.getElementById('tab-restroom').classList.toggle('active', tab === 'restroom');
+      document.getElementById('tab-restroom').setAttribute('aria-selected', tab === 'restroom');
+      if (venueData) updateQueuePanel(venueData.queues);
+    }
+
+    /* ═══ Update Exit Strategy ════════════════════════════════════ */
+    async function updateExitStrategy() {
+      const section = sectionSelect.value;
+      try {
+        const res = await fetch(`/api/exit-strategy/${section}`);
+        const data = await res.json();
+
+        if (data.error) {
+          document.getElementById('exit-info').innerHTML =
+            `<p style="color:var(--danger);">${data.error}</p>`;
+          return;
+        }
+
+        document.getElementById('exit-info').innerHTML = `
+          <div class="exit-row">
+            <span class="material-icons">door_front</span>
+            <div>
+              <div class="exit-row-label">Recommended Gate</div>
+              <div class="exit-row-value">${data.recommended_gate}</div>
+            </div>
+          </div>
+          <div class="exit-row">
+            <span class="material-icons">location_on</span>
+            <div>
+              <div class="exit-row-label">Zone</div>
+              <div class="exit-row-value">${data.zone_name}</div>
+            </div>
+          </div>
+          <div class="exit-row">
+            <span class="material-icons">hourglass_bottom</span>
+            <div>
+              <div class="exit-row-label">Estimated Wait</div>
+              <div class="exit-row-value">${data.estimated_wait}</div>
+            </div>
+          </div>
+          <p class="exit-tip">${data.tip}</p>
+          <button class="refresh-btn" aria-label="Refresh exit strategy" onclick="updateExitStrategy()">
+            <span class="material-icons">refresh</span>
+            Refresh
+          </button>
+        `;
+      } catch (err) {
+        console.error('Failed to fetch exit strategy:', err);
+      }
+    }
+
+    /* ═══ Chat ════════════════════════════════════════════════════ */
+    async function sendMessage() {
+      const message = chatInput.value.trim();
+      if (!message || isLoading) return;
+
+      addMessage('user', message);
+      chatInput.value = '';
+      setLoading(true);
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message,
+            section: sectionSelect.value,
+          }),
+        });
+
+        const data = await res.json();
+        addMessage('ai', data.response);
+
+        if (data.alert) {
+          showAlert(data.alert);
+        }
+      } catch (err) {
+        addMessage('ai', 'Sorry, I couldn\'t connect to the server. Please try again or check with venue staff.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function addMessage(role, text) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      div.innerHTML = `
+        <div class="message-bubble">${escapeHtml(text)}</div>
+        <div class="message-time">${now}</div>
+      `;
+
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function setLoading(loading) {
+      isLoading = loading;
+      chatInput.disabled = loading;
+      sendBtn.disabled = loading;
+      chatInput.placeholder = loading
+        ? 'StadiumIQ is thinking...'
+        : 'Ask about queues, exits, food...';
+    }
+
+    /* ═══ Alert ═══════════════════════════════════════════════════ */
+    function showAlert(text) {
+      alertText.textContent = text;
+      alertBanner.classList.add('visible');
+    }
+
+    function dismissAlert() {
+      alertBanner.classList.remove('visible');
+    }
+
+    /* ═══ Helpers ═════════════════════════════════════════════════ */
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

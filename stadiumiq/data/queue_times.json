@@ -1,0 +1,79 @@
+{
+  "last_updated": "2025-04-20T14:30:00",
+  "queues": [
+    {
+      "facility_id": "Food Court A",
+      "wait_minutes": 4,
+      "crowd_level": "low",
+      "crowd_percent": 30
+    },
+    {
+      "facility_id": "Food Court B",
+      "wait_minutes": 12,
+      "crowd_level": "high",
+      "crowd_percent": 85
+    },
+    {
+      "facility_id": "Food Court C",
+      "wait_minutes": 6,
+      "crowd_level": "medium",
+      "crowd_percent": 55
+    },
+    {
+      "facility_id": "Food Court D",
+      "wait_minutes": 3,
+      "crowd_level": "low",
+      "crowd_percent": 25
+    },
+    {
+      "facility_id": "Restroom N1",
+      "wait_minutes": 2,
+      "crowd_level": "low",
+      "crowd_percent": 20
+    },
+    {
+      "facility_id": "Restroom S1",
+      "wait_minutes": 8,
+      "crowd_level": "high",
+      "crowd_percent": 80
+    },
+    {
+      "facility_id": "Restroom E1",
+      "wait_minutes": 3,
+      "crowd_level": "low",
+      "crowd_percent": 30
+    },
+    {
+      "facility_id": "Restroom W1",
+      "wait_minutes": 5,
+      "crowd_level": "medium",
+      "crowd_percent": 50
+    }
+  ],
+  "zone_density": [
+    {
+      "zone_id": "A",
+      "zone_name": "North Stand",
+      "density_percent": 45,
+      "level": "medium"
+    },
+    {
+      "zone_id": "B",
+      "zone_name": "South Stand",
+      "density_percent": 88,
+      "level": "high"
+    },
+    {
+      "zone_id": "C",
+      "zone_name": "East Stand",
+      "density_percent": 30,
+      "level": "low"
+    },
+    {
+      "zone_id": "D",
+      "zone_name": "West Stand",
+      "density_percent": 60,
+      "level": "medium"
+    }
+  ]
+}
