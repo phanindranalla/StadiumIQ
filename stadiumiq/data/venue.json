@@ -1,6 +1,7 @@
 {
   "venue_name": "StadiumIQ Arena",
   "total_capacity": 50000,
+  "venue_center": {"lat": 37.4032, "lng": -121.9698},
   "zones": [
     {
       "id": "A",
@@ -8,7 +9,8 @@
       "sections": ["A1", "A2", "A3"],
       "nearest_gate": "Gate 1",
       "nearest_food": "Food Court A",
-      "nearest_restroom": "Restroom N1"
+      "nearest_restroom": "Restroom N1",
+      "coordinates": {"lat": 37.4045, "lng": -121.9698}
     },
     {
       "id": "B",
@@ -16,7 +18,8 @@
       "sections": ["B1", "B2", "B3"],
       "nearest_gate": "Gate 2",
       "nearest_food": "Food Court B",
-      "nearest_restroom": "Restroom S1"
+      "nearest_restroom": "Restroom S1",
+      "coordinates": {"lat": 37.4015, "lng": -121.9698}
     },
     {
       "id": "C",
@@ -24,7 +27,8 @@
       "sections": ["C1", "C2", "C3"],
       "nearest_gate": "Gate 3",
       "nearest_food": "Food Court C",
-      "nearest_restroom": "Restroom E1"
+      "nearest_restroom": "Restroom E1",
+      "coordinates": {"lat": 37.4032, "lng": -121.9680}
     },
     {
       "id": "D",
@@ -32,20 +36,21 @@
       "sections": ["D1", "D2", "D3"],
       "nearest_gate": "Gate 4",
       "nearest_food": "Food Court D",
-      "nearest_restroom": "Restroom W1"
+      "nearest_restroom": "Restroom W1",
+      "coordinates": {"lat": 37.4032, "lng": -121.9715}
     }
   ],
   "gates": [
-    { "id": "Gate 1", "location": "North", "status": "open" },
-    { "id": "Gate 2", "location": "South", "status": "open" },
-    { "id": "Gate 3", "location": "East", "status": "open" },
-    { "id": "Gate 4", "location": "West", "status": "open" }
+    { "id": "Gate 1", "location": "North", "status": "open", "coordinates": {"lat": 37.4055, "lng": -121.9698} },
+    { "id": "Gate 2", "location": "South", "status": "open", "coordinates": {"lat": 37.4005, "lng": -121.9698} },
+    { "id": "Gate 3", "location": "East", "status": "open", "coordinates": {"lat": 37.4032, "lng": -121.9670} },
+    { "id": "Gate 4", "location": "West", "status": "open", "coordinates": {"lat": 37.4032, "lng": -121.9725} }
   ],
   "facilities": [
-    { "id": "Food Court A", "zone": "A", "type": "food" },
-    { "id": "Food Court B", "zone": "B", "type": "food" },
-    { "id": "Food Court C", "zone": "C", "type": "food" },
-    { "id": "Food Court D", "zone": "D", "type": "food" },
+    { "id": "Food Court A", "zone": "A", "type": "food", "coordinates": {"lat": 37.4040, "lng": -121.9696} },
+    { "id": "Food Court B", "zone": "B", "type": "food", "coordinates": {"lat": 37.4020, "lng": -121.9696} },
+    { "id": "Food Court C", "zone": "C", "type": "food", "coordinates": {"lat": 37.4030, "lng": -121.9682} },
+    { "id": "Food Court D", "zone": "D", "type": "food", "coordinates": {"lat": 37.4030, "lng": -121.9712} },
     { "id": "Restroom N1", "zone": "A", "type": "restroom" },
     { "id": "Restroom S1", "zone": "B", "type": "restroom" },
     { "id": "Restroom E1", "zone": "C", "type": "restroom" },

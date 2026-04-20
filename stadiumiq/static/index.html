@@ -1126,6 +1126,29 @@
         </div>
       </div>
 
+      <!-- Panel 0: Venue Map -->
+      <div class="panel" id="map-panel">
+        <div class="panel-title">
+          <span class="material-icons">map</span>
+          Venue Map
+        </div>
+        <div class="panel-body">
+          <iframe
+            id="venue-map-iframe"
+            width="100%"
+            height="200"
+            style="border:0; border-radius:8px;"
+            loading="lazy"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"
+            src="">
+          </iframe>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">
+            Venue map powered by Google Maps
+          </p>
+        </div>
+      </div>
+
       <!-- Panel 1: Game State -->
       <div class="panel" id="game-panel">
         <div class="panel-title">
@@ -1234,6 +1257,8 @@
   </div>
 
   <script>
+    const MAPS_API_KEY = "MAPS_API_KEY_PLACEHOLDER";
+
     /* ═══ UI Toggle Logic ═════════════════════════════════════════ */
     function toggleChat() {
       const chatPanel = document.getElementById('chat-panel');
@@ -1449,7 +1474,13 @@
 
     /* ═══ Init ════════════════════════════════════════════════════ */
     document.addEventListener('DOMContentLoaded', () => {
-      addMessage('ai', 'Welcome to StadiumIQ! Search for a live match above to get real-time scores and venue intelligence. You can also ask me anything — current queue times, crowd levels, or exit strategies.');
+      // Set the Venue Map iframe src using the injected key
+      const mapIframe = document.getElementById('venue-map-iframe');
+      if (mapIframe) {
+        mapIframe.src = `https://www.google.com/maps/embed/v1/place?key=${MAPS_API_KEY}&q=Wembley+Stadium,London`;
+      }
+
+      addMessage('ai', 'Welcome to StadiumIQ! Search for a live match above to find real-time scores and venue intelligence. You can also ask me anything — current queue times, crowd levels, or exit strategies.');
       fetchConfigAndLoadMaps();
       fetchVenueData();
       fetchActiveMatch();

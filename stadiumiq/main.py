@@ -19,6 +19,12 @@ from tools import (
     get_exit_strategy,
     get_venue_name,
 )
+from firebase_service import (
+    get_queue_times_firebase,
+    get_crowd_density_firebase,
+    get_game_state_firebase,
+    initialize_firebase_with_mock_data
+)
 from live_data import search_matches, set_active_match, get_active_match, is_live_mode, get_active_sport, SPORT_CONFIGS
 
 # ── App Setup ────────────────────────────────────────────────────────────────
@@ -53,6 +59,8 @@ async def startup_event() -> None:
     """Initialize the StadiumAgent on application startup."""
     global agent
     agent = StadiumAgent(user_section="A1")
+    # Initialize and seed Firebase if configured
+    initialize_firebase_with_mock_data()
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────
@@ -64,8 +72,13 @@ async def serve_index() -> HTMLResponse:
     Returns:
         The index.html file as an HTML response.
     """
+    import os
     with open("static/index.html", "r", encoding="utf-8") as f:
         html_content = f.read()
+    
+    maps_key = os.getenv("MAPS_API_KEY", os.getenv("GOOGLE_MAPS_API_KEY", ""))
+    html_content = html_content.replace("MAPS_API_KEY_PLACEHOLDER", maps_key)
+    
     return HTMLResponse(content=html_content)
 
 
@@ -74,17 +87,20 @@ async def get_venue_data() -> JSONResponse:
     """Get all live venue data in a single response.
 
     Calls crowd density, queue times, and game state tools
-    and bundles them together. Includes venue name for dashboard display.
+    via Firebase (with local fallback) and bundles them together.
+    Includes venue name for dashboard display.
 
     Returns:
         JSON with keys: crowd, queues, game, venue_name, is_live.
     """
+    from tools import _get_venue_data
     return JSONResponse(content={
-        "crowd": get_crowd_density(),
-        "queues": get_queue_times(),
-        "game": get_game_state(),
+        "crowd": get_crowd_density_firebase(),
+        "queues": get_queue_times_firebase(),
+        "game": get_game_state_firebase(),
         "venue_name": get_venue_name(),
         "is_live": is_live_mode(),
+        "venue_layout": _get_venue_data()
     })
 
 
