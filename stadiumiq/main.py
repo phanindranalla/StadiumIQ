@@ -76,7 +76,7 @@ async def serve_index() -> HTMLResponse:
     with open("static/index.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     
-    maps_key = os.getenv("MAPS_API_KEY", os.getenv("GOOGLE_MAPS_API_KEY", ""))
+    maps_key = os.getenv("MAPS_API_KEY", os.getenv("GOOGLE_MAPS_API_KEY", "")).strip()
     html_content = html_content.replace("MAPS_API_KEY_PLACEHOLDER", maps_key)
     
     return HTMLResponse(content=html_content)

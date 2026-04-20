@@ -15,8 +15,8 @@ def init_firebase():
     if firebase_app:
         return firebase_app
 
-    credentials_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
-    database_url = os.getenv("FIREBASE_DB_URL")
+    credentials_json = os.getenv("FIREBASE_CREDENTIALS_JSON", "").strip()
+    database_url = os.getenv("FIREBASE_DB_URL", "").strip()
 
     if not credentials_json or not database_url:
         print("Firebase configuration (FIREBASE_CREDENTIALS_JSON or FIREBASE_DB_URL) missing. Falling back to local files.")

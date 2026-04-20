@@ -24,8 +24,8 @@ load_dotenv()
 
 # ── API Configuration ────────────────────────────────────────────────────────
 
-API_SPORTS_KEY = os.getenv("FOOTBALL_API_KEY", "")
-CRICKET_API_KEY = os.getenv("CRICKET_API_KEY", "")
+API_SPORTS_KEY = os.getenv("FOOTBALL_API_KEY", "").strip()
+CRICKET_API_KEY = os.getenv("CRICKET_API_KEY", "").strip()
 
 # Sport-specific API configurations
 SPORT_CONFIGS = {
@@ -483,6 +483,73 @@ def _cricket_phase(fixture: dict) -> str:
 # UNIFIED API
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _demo_fixtures(query: str, sport: str = "all") -> List[dict]:
+    """Return demo fixtures when APIs are rate-limited or unavailable."""
+    today = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    all_demos = [
+        # Football
+        {"fixture_id": "demo-f1", "sport": "football", "home_team": "Manchester United", "away_team": "Liverpool FC",
+         "home_logo": "", "away_logo": "", "league": "Premier League", "league_country": "England",
+         "venue_name": "Old Trafford", "venue_city": "Manchester", "status": "In Progress", "status_short": "2H",
+         "score_home": 1, "score_away": 1, "elapsed": 72, "date": today, "is_live": True},
+        {"fixture_id": "demo-f2", "sport": "football", "home_team": "Real Madrid", "away_team": "FC Barcelona",
+         "home_logo": "", "away_logo": "", "league": "La Liga", "league_country": "Spain",
+         "venue_name": "Santiago Bernabeu", "venue_city": "Madrid", "status": "Not Started", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+        {"fixture_id": "demo-f3", "sport": "football", "home_team": "Arsenal FC", "away_team": "Chelsea FC",
+         "home_logo": "", "away_logo": "", "league": "Premier League", "league_country": "England",
+         "venue_name": "Emirates Stadium", "venue_city": "London", "status": "Not Started", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+        {"fixture_id": "demo-f4", "sport": "football", "home_team": "Bayern Munich", "away_team": "Borussia Dortmund",
+         "home_logo": "", "away_logo": "", "league": "Bundesliga", "league_country": "Germany",
+         "venue_name": "Allianz Arena", "venue_city": "Munich", "status": "Not Started", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+        # Cricket
+        {"fixture_id": "demo-c1", "sport": "cricket", "home_team": "India", "away_team": "Australia",
+         "home_logo": "", "away_logo": "", "league": "ICC World Cup", "league_country": "",
+         "venue_name": "Wankhede Stadium", "venue_city": "Mumbai", "status": "India batting", "status_short": "LIVE",
+         "score_home": "247/3", "score_away": "312/8", "elapsed": None, "date": today, "is_live": True},
+        {"fixture_id": "demo-c2", "sport": "cricket", "home_team": "Mumbai Indians", "away_team": "Chennai Super Kings",
+         "home_logo": "", "away_logo": "", "league": "IPL 2025", "league_country": "",
+         "venue_name": "Wankhede Stadium", "venue_city": "Mumbai", "status": "Match starts soon", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+        {"fixture_id": "demo-c3", "sport": "cricket", "home_team": "Royal Challengers Bangalore", "away_team": "Kolkata Knight Riders",
+         "home_logo": "", "away_logo": "", "league": "IPL 2025", "league_country": "",
+         "venue_name": "M. Chinnaswamy Stadium", "venue_city": "Bangalore", "status": "Match starts soon", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+        # Basketball
+        {"fixture_id": "demo-b1", "sport": "basketball", "home_team": "LA Lakers", "away_team": "Golden State Warriors",
+         "home_logo": "", "away_logo": "", "league": "NBA", "league_country": "USA",
+         "venue_name": "Crypto.com Arena", "venue_city": "Los Angeles", "status": "In Progress", "status_short": "Q3",
+         "score_home": 87, "score_away": 91, "elapsed": None, "date": today, "is_live": True},
+        {"fixture_id": "demo-b2", "sport": "basketball", "home_team": "Boston Celtics", "away_team": "Miami Heat",
+         "home_logo": "", "away_logo": "", "league": "NBA", "league_country": "USA",
+         "venue_name": "TD Garden", "venue_city": "Boston", "status": "Not Started", "status_short": "NS",
+         "score_home": None, "score_away": None, "elapsed": None, "date": today, "is_live": False},
+    ]
+
+    q = query.lower()
+    matched = [
+        f for f in all_demos
+        if q in f["home_team"].lower() or q in f["away_team"].lower()
+        or q in f["league"].lower() or q in f["venue_name"].lower()
+        or q in f["venue_city"].lower()
+    ]
+
+    # If sport filter, narrow further
+    if sport != "all":
+        matched = [f for f in matched if f["sport"] == sport]
+
+    # If nothing matched the query specifically, return sport-filtered demos
+    if not matched:
+        if sport == "all":
+            matched = all_demos
+        else:
+            matched = [f for f in all_demos if f["sport"] == sport]
+
+    return matched
+
+
 def search_matches(query: str, sport: str = "all") -> List[dict]:
     """Search for matches across one or all supported sports.
 
@@ -502,6 +569,10 @@ def search_matches(query: str, sport: str = "all") -> List[dict]:
     if sport in ("all", "cricket"):
         results.extend(_search_cricket(query))
 
+    # Fall back to demo fixtures if APIs are rate-limited or unavailable
+    if not results:
+        results = _demo_fixtures(query, sport)
+
     # Sort: live first, then by date
     results.sort(key=lambda m: (0 if m.get("is_live") else 1, m.get("date", "")))
     return results[:20]
@@ -520,6 +591,19 @@ def set_active_match(fixture_id, sport: str = "football") -> Optional[dict]:
     global _active_fixture, _active_venue, _active_sport, _cached_fixture_data, _cache_timestamp
 
     _active_sport = sport
+
+    # Handle demo fixtures (no API call needed)
+    if str(fixture_id).startswith("demo-"):
+        demo_list = _demo_fixtures("", "all")
+        demo = next((f for f in demo_list if f["fixture_id"] == fixture_id), None)
+        if demo:
+            _active_fixture = demo
+            _active_sport = demo["sport"]
+            _cached_fixture_data = demo
+            _cache_timestamp = time.time()
+            _active_venue = build_venue_layout(demo.get("venue_name", "StadiumIQ Arena"))
+            return _active_fixture
+        return None
 
     if sport == "football":
         base = SPORT_CONFIGS["football"]["base_url"]
@@ -581,6 +665,10 @@ def refresh_live_fixture() -> Optional[dict]:
 
     if not _active_fixture:
         return None
+
+    # Demo fixtures don't need refreshing
+    if str(_active_fixture.get("fixture_id", "")).startswith("demo-"):
+        return _active_fixture
 
     if time.time() - _cache_timestamp < CACHE_TTL_SECONDS:
         return _active_fixture

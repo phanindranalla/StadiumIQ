@@ -26,7 +26,7 @@ load_dotenv()
 # Configure Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY.strip())
 
 # System prompt template
 SYSTEM_PROMPT = """You are StadiumIQ, a smart venue assistant helping attendees \

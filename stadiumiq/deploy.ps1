@@ -26,7 +26,7 @@ gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudb
 Write-Host "Deploying StadiumIQ to Cloud Run with Secret Manager..."
 try {
     $ErrorActionPreference = "Stop"
-    gcloud run deploy stadiumiq --source . --region=$Region --allow-unauthenticated --service-account=$ServiceAccount --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest,FOOTBALL_API_KEY=FOOTBALL_API_KEY:latest,CRICKET_API_KEY=CRICKET_API_KEY:latest,GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest"
+    gcloud run deploy stadiumiq --source . --region=$Region --allow-unauthenticated --service-account=$ServiceAccount --set-secrets="GEMINI_API_KEY=GEMINI_API_KEY:latest,FOOTBALL_API_KEY=FOOTBALL_API_KEY:latest,CRICKET_API_KEY=CRICKET_API_KEY:latest,GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest,MAPS_API_KEY=GOOGLE_MAPS_API_KEY:latest"
     Write-Host "Deployment complete! Your service should be available shortly." -ForegroundColor Green
 } catch {
     Write-Error "Deployment failed! Please check the red error text above. Do not assume the app is deployed."
