@@ -82,15 +82,11 @@ class StadiumAgent:
         self.system_prompt: str = self._build_system_prompt()
 
         # Initialize Gemini model and chat session
-        try:
-            self.model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=self.system_prompt,
-            )
-            self.chat_session = self.model.start_chat(history=[])
-        except Exception:
-            self.model = None
-            self.chat_session = None
+        self.model = genai.GenerativeModel(
+            model_name="gemini-3-flash",
+            system_instruction=self.system_prompt,
+        )
+        self.chat_session = self.model.start_chat(history=[])
 
     def _build_system_prompt(self) -> str:
         """Build the system prompt by filling in the template with live data.

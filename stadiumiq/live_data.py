@@ -24,9 +24,8 @@ load_dotenv()
 
 # ── API Configuration ────────────────────────────────────────────────────────
 
-# Helper to get keys dynamically (ensures they are fresh from environment)
-def _get_api_sports_key(): return os.getenv("FOOTBALL_API_KEY", "")
-def _get_cricket_api_key(): return os.getenv("CRICKET_API_KEY", "")
+API_SPORTS_KEY = os.getenv("FOOTBALL_API_KEY", "")
+CRICKET_API_KEY = os.getenv("CRICKET_API_KEY", "")
 
 # Sport-specific API configurations
 SPORT_CONFIGS = {
@@ -73,14 +72,13 @@ def _api_sports_request(base_url: str, endpoint: str, params: Dict[str, str]) ->
     Returns:
         Parsed JSON response dict, or None if the request fails.
     """
-    key = _get_api_sports_key()
-    if not key:
+    if not API_SPORTS_KEY:
         return None
     try:
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(
                 f"{base_url}{endpoint}",
-                headers={"x-apisports-key": key},
+                headers={"x-apisports-key": API_SPORTS_KEY},
                 params=params,
             )
             resp.raise_for_status()
@@ -100,11 +98,10 @@ def _cricket_api_request(endpoint: str, params: Dict[str, str]) -> Optional[dict
     Returns:
         Parsed JSON response dict, or None if the request fails.
     """
-    key = _get_cricket_api_key()
-    if not key:
+    if not CRICKET_API_KEY:
         return None
     try:
-        params["apikey"] = key
+        params["apikey"] = CRICKET_API_KEY
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(
                 f"https://api.cricapi.com/v1{endpoint}",
@@ -139,21 +136,21 @@ def _search_football(query: str) -> List[dict]:
             if query_lower in searchable:
                 results.append(_format_football_fixture(fix, is_live=True))
 
-    # Upcoming fixtures (next 7 days) if nothing found for today
-    if not results:
-        from datetime import timedelta
-        for i in range(1, 8):
-            future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
-            future_data = _api_sports_request(base, "/fixtures", {"date": future_date})
-            if future_data and future_data.get("response"):
-                for fix in future_data["response"]:
-                    home = fix["teams"]["home"]["name"]
-                    away = fix["teams"]["away"]["name"]
-                    league = fix["league"]["name"]
-                    searchable = f"{home} {away} {league}".lower()
-                    if query_lower in searchable:
-                        results.append(_format_football_fixture(fix, is_live=False))
-            if len(results) >= 5: break
+    # Today's fixtures
+    today = datetime.now().strftime("%Y-%m-%d")
+    today_data = _api_sports_request(base, "/fixtures", {"date": today})
+    if today_data and today_data.get("response"):
+        live_ids = {r["fixture_id"] for r in results}
+        for fix in today_data["response"]:
+            if fix["fixture"]["id"] in live_ids:
+                continue
+            home = fix["teams"]["home"]["name"]
+            away = fix["teams"]["away"]["name"]
+            league = fix["league"]["name"]
+            venue_name = fix.get("fixture", {}).get("venue", {}).get("name", "")
+            searchable = f"{home} {away} {league} {venue_name}".lower()
+            if query_lower in searchable:
+                results.append(_format_football_fixture(fix, is_live=False))
 
     return results
 
@@ -250,19 +247,18 @@ def _search_basketball(query: str) -> List[dict]:
             if query_lower in searchable:
                 results.append(formatted)
 
-    # Upcoming games if nothing found for today
-    if not results:
-        from datetime import timedelta
-        for i in range(1, 4):
-            future_date = (datetime.now() + timedelta(days=i)).strftime("%Y-%m-%d")
-            future_data = _api_sports_request(base, "/games", {"date": future_date})
-            if future_data and future_data.get("response"):
-                for game in future_data["response"]:
-                    formatted = _format_basketball_game(game, is_live=False)
-                    searchable = f"{formatted['home_team']} {formatted['away_team']} {formatted['league']}".lower()
-                    if query_lower in searchable:
-                        results.append(formatted)
-            if len(results) >= 5: break
+    # Today's games
+    today = datetime.now().strftime("%Y-%m-%d")
+    today_data = _api_sports_request(base, "/games", {"date": today})
+    if today_data and today_data.get("response"):
+        live_ids = {r["fixture_id"] for r in results}
+        for game in today_data["response"]:
+            if game.get("id") in live_ids:
+                continue
+            formatted = _format_basketball_game(game, is_live=False)
+            searchable = f"{formatted['home_team']} {formatted['away_team']} {formatted['league']}".lower()
+            if query_lower in searchable:
+                results.append(formatted)
 
     return results
 
